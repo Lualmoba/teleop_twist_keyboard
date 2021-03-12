@@ -4,7 +4,7 @@ from __future__ import print_function
 
 import threading
 
-import roslib; roslib.load_manifest('teleop_twist_keyboard')
+import roslib;
 import rospy
 
 from geometry_msgs.msg import Twist
@@ -15,62 +15,64 @@ msg = """
 Reading from the keyboard  and Publishing to Twist!
 ---------------------------
 Moving around:
-   u    i    o
-   j    k    l
-   m    ,    .
+   q    w    e
+   a    s    d
+   z    x    c
 
 For Holonomic mode (strafing), hold down the shift key:
 ---------------------------
-   U    I    O
-   J    K    L
-   M    <    >
+   Q    W    E
+   A    S    D
+   Z    X    C
 
-t : up (+z)
-b : down (-z)
+t/T : up (+z)
+b/B : down (-z)
 
 anything else : stop
 
-q/z : increase/decrease max speeds by 10%
-w/x : increase/decrease only linear speed by 10%
-e/c : increase/decrease only angular speed by 10%
+u/m : increase/decrease max speeds by 10%
+i/, : increase/decrease only linear speed by 10%
+o/. : increase/decrease only angular speed by 10%
 
 CTRL-C to quit
 """
 
 moveBindings = {
-        'i':(1,0,0,0),
-        'o':(1,0,0,-1),
-        'j':(0,0,0,1),
-        'l':(0,0,0,-1),
-        'u':(1,0,0,1),
-        ',':(-1,0,0,0),
-        '.':(-1,0,0,1),
-        'm':(-1,0,0,-1),
-        'O':(1,-1,0,0),
-        'I':(1,0,0,0),
-        'J':(0,1,0,0),
-        'L':(0,-1,0,0),
-        'U':(1,1,0,0),
-        '<':(-1,0,0,0),
-        '>':(-1,-1,0,0),
-        'M':(-1,1,0,0),
+        'w':(1,0,0,0),
+        'a':(0,0,0,1),
+        'd':(0,0,0,-1),
+        'x':(-1,0,0,0),
+        'q':(1,0,0,1),
+        'e':(1,0,0,-1),
+        'z':(-1,0,0,-1),
+        'c':(-1,0,0,1),
         't':(0,0,1,0),
         'b':(0,0,-1,0),
+        'W':(1,0,0,0),
+        'A':(0,1,0,0),
+        'D':(0,-1,0,0),
+        'X':(-1,0,0,0),
+        'Q':(1,1,0,0),
+        'E':(1,-1,0,0),
+        'Z':(-1,1,0,0),
+        'C':(-1,-1,0,0),
+        'T':(0,0,1,0),
+        'B':(0,0,-1,0),
     }
 
 speedBindings={
-        'q':(1.1,1.1),
-        'z':(.9,.9),
-        'w':(1.1,1),
-        'x':(.9,1),
-        'e':(1,1.1),
-        'c':(1,.9),
+        'u':(1.1,1.1),
+        'm':(.9,.9),
+        'i':(1.1,1),
+        ',':(.9,1),
+        'o':(1,1.1),
+        '.':(1,.9),
     }
 
 class PublishThread(threading.Thread):
     def __init__(self, rate):
         super(PublishThread, self).__init__()
-        self.publisher = rospy.Publisher('cmd_vel', Twist, queue_size = 1)
+        self.publisher = rospy.Publisher('~input', Twist, queue_size = 1)
         self.x = 0.0
         self.y = 0.0
         self.z = 0.0
@@ -164,10 +166,10 @@ def vels(speed, turn):
 if __name__=="__main__":
     settings = termios.tcgetattr(sys.stdin)
 
-    rospy.init_node('teleop_twist_keyboard')
+    rospy.init_node('keyboard_robot_control')
 
-    speed = rospy.get_param("~speed", 0.5)
-    turn = rospy.get_param("~turn", 1.0)
+    speed = rospy.get_param("~speed", 0.01)
+    turn = rospy.get_param("~turn", 0.01)
     repeat = rospy.get_param("~repeat_rate", 0.0)
     key_timeout = rospy.get_param("~key_timeout", 0.0)
     if key_timeout == 0.0:
